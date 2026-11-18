@@ -39,20 +39,43 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Barra lateral informativa
+# Inicializar el historial de resultados en la sesión si no existe
+if "historial" not in st.session_state:
+    st.session_state.historial = []
+
+# Barra lateral informativa y registro de grupo
 with st.sidebar:
     st.title("El liderazgo del entrenador")
     st.markdown("**Máster de Investigación en Ciencias del Deporte**")
+    st.divider()
+    
+    # Campo para el nombre del grupo
+    nombre_grupo = st.text_input("👥 Identificación del Grupo:", placeholder="Ej. Grupo 1 - Táctica")
+    
+    if nombre_grupo:
+        st.success(f"Sesión activa para: **{nombre_grupo}**")
+    else:
+        st.warning("⚠️ Introduce el nombre del grupo para registrar los resultados.")
+        
+    st.divider()
     st.info("💡 **Dinámica:** Analiza el caso crítico, debate con tu grupo y selecciona el estilo de liderazgo óptimo para intervenir.")
     st.divider()
     st.caption("UCLM - Rendimiento Experto")
 
 # Cabecera principal atractiva
 st.markdown('<p class="main-header">⚽ Gabinete de Crisis: El Descanso</p>', unsafe_allow_html=True)
-st.markdown('<p class="sub-header">Minuto 45 | Partido de eliminatoria | <strong>Marcador en contra: 0-2</strong></p>', unsafe_allow_html=True)
+if nombre_grupo:
+    st.markdown(f'<p class="sub-header">Grupo en activo: <strong>{nombre_grupo}</strong> | Minuto 45 | Partido de eliminatoria | Marcador en contra: 0-2</p>', unsafe_allow_html=True)
+else:
+    st.markdown('<p class="sub-header">Minuto 45 | Partido de eliminatoria | <strong>Marcador en contra: 0-2</strong></p>', unsafe_allow_html=True)
 
-# Pestañas principales para ordenar la sesión
-pestana_inicio, pestana_casos, pestana_teoria = st.tabs(["🚀 Introducción", "📋 Simulador de Casos", "🧠 Tipos de liderazgo"])
+# Pestañas principales para ordenar la sesión (añadiendo Resultados del Grupo)
+pestana_inicio, pestana_casos, pestana_resumen, pestana_teoria = st.tabs([
+    "🚀 Introducción", 
+    "📋 Simulador de Casos", 
+    "📊 Resultados del Grupo", 
+    "🧠 Tipos de liderazgo"
+])
 
 with pestana_inicio:
     col_a, col_b = st.columns(2)
@@ -73,6 +96,9 @@ with pestana_inicio:
         """)
 
 with pestana_casos:
+    if not nombre_grupo:
+        st.warning("⚠️ Por favor, introduce el **nombre de tu grupo** en el panel lateral izquierdo antes de evaluar los casos.")
+        
     # Selector de los 4 casos clínicos
     caso_seleccionado = st.selectbox(
         "**Selecciona el caso clínico a resolver en el vestuario:**",
@@ -105,58 +131,72 @@ with pestana_casos:
         )
         
         if st.button("🚀 Evaluar Estilo Aplicado", type="primary", key="btn_1"):
-            if "Transformacional" in estilo_elegido:
-                st.success("✅ **¡Intervención Óptima!**")
-                c1, c2 = st.columns(2)
-                c1.metric(label="Cohesión del Vestuario", value="+85%", delta="Alta")
-                c2.metric(label="Eficacia Táctica", value="Óptima", delta="Recuperada")
-                
-                st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
-                st.markdown("#### 🎓 Conclusiones")
-                st.write("""
-                * **Por qué funciona:** El entrenador actúa como agente de cambio aplicando *Influencia Idealizada* (mantiene la calma bajo presión extrema en el minuto 45) y *Consideración Individualizada* (reconoce la jerarquía del veterano sin ceder en disciplina).
-                * **Conclusión teórica:** Alinea su experiencia con el propósito colectivo, generando autonomía y cohesión profunda en lugar de rupturas de vestuario.
-                """)
-                st.markdown('</div>', unsafe_allow_html=True)
-            elif "Transaccional" in estilo_elegido:
-                st.warning("⚠️ **¡Efecto Limitado / Riesgo de Conflicto!**")
-                c1, c2 = st.columns(2)
-                c1.metric(label="Cohesión del Vestuario", value="-25%", delta="Tensión")
-                c2.metric(label="Eficacia Táctica", value="Inestable", delta="Riesgo")
-                
-                st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
-                st.markdown("#### 🎓 Conclusiones")
-                st.write("""
-                * **Por qué es limitado:** Se basa en un intercambio contingente y correcciones punitivas[cite: 4]. Aunque útil para mantener disciplina a corto plazo, aplicar una bronca punitiva a un líder con estatus intocable desencadena un enfrentamiento de egos.
-                * **Conclusión teórica:** Quiebra el clima de seguridad psicológica del grupo.
-                """)
-                st.markdown('</div>', unsafe_allow_html=True)
-            elif "Auténtico" in estilo_elegido:
-                st.success("✅ **¡Intervención Muy Sólida!**")
-                c1, c2 = st.columns(2)
-                c1.metric(label="Cohesión del Vestuario", value="+80%", delta="Alta")
-                c2.metric(label="Eficacia Táctica", value="Estable", delta="Positiva")
-                
-                st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
-                st.markdown("#### 🎓 Conclusiones")
-                st.write("""
-                * **Por qué funciona:** Se centra en la coherencia ética, la transparencia relacional y el procesamiento equilibrado. El líder admite errores sin prejuicios.
-                * **Conclusión teórica:** Genera alta confianza moral y desarma la actitud defensiva del capitán.
-                """)
-                st.markdown('</div>', unsafe_allow_html=True)
+            if not nombre_grupo:
+                st.error("❌ Debes indicar el nombre del grupo en la barra lateral para registrar el resultado.")
             else:
-                st.error("❌ **¡Intervención Desastrosa!**")
-                c1, c2 = st.columns(2)
-                c1.metric(label="Cohesión del Vestuario", value="-70%", delta="Crítico")
-                c2.metric(label="Eficacia Táctica", value="Nula", delta="Colapso")
+                if "Transformacional" in estilo_elegido:
+                    res_texto = "Óptimo (Transformacional)"
+                    st.success("✅ **¡Intervención Óptima!**")
+                    c1, c2 = st.columns(2)
+                    c1.metric(label="Cohesión del Vestuario", value="+85%", delta="Alta")
+                    c2.metric(label="Eficacia Táctica", value="Óptima", delta="Recuperada")
+                    
+                    st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
+                    st.markdown("#### 🎓 Conclusiones")
+                    st.write("""
+                    * **Por qué funciona:** El entrenador actúa como agente de cambio aplicando *Influencia Idealizada* (mantiene la calma bajo presión extrema en el minuto 45) y *Consideración Individualizada* (reconoce la jerarquía del veterano sin ceder en disciplina).
+                    * **Conclusión teórica:** Alinea su experiencia con el propósito colectivo, generando autonomía y cohesión profunda en lugar de rupturas de vestuario.
+                    """)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                elif "Transaccional" in estilo_elegido:
+                    res_texto = "Limitado (Transaccional)"
+                    st.warning("⚠️ **¡Efecto Limitado / Riesgo de Conflicto!**")
+                    c1, c2 = st.columns(2)
+                    c1.metric(label="Cohesión del Vestuario", value="-25%", delta="Tensión")
+                    c2.metric(label="Eficacia Táctica", value="Inestable", delta="Riesgo")
+                    
+                    st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
+                    st.markdown("#### 🎓 Conclusiones")
+                    st.write("""
+                    * **Por qué es limitado:** Se basa en un intercambio contingente y correcciones punitivas[cite: 4]. Aunque útil para mantener disciplina a corto plazo[cite: 4], aplicar una bronca punitiva a un líder con estatus intocable desencadena un enfrentamiento de egos.
+                    * **Conclusión teórica:** Quiebra el clima de seguridad psicológica del grupo.
+                    """)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                elif "Auténtico" in estilo_elegido:
+                    res_texto = "Sólido (Auténtico)"
+                    st.success("✅ **¡Intervención Muy Sólida!**")
+                    c1, c2 = st.columns(2)
+                    c1.metric(label="Cohesión del Vestuario", value="+80%", delta="Alta")
+                    c2.metric(label="Eficacia Táctica", value="Estable", delta="Positiva")
+                    
+                    st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
+                    st.markdown("#### 🎓 Conclusiones")
+                    st.write("""
+                    * **Por qué funciona:** Se centra en la coherencia ética, la transparencia relacional y el procesamiento equilibrado. El líder admite errores sin prejuicios.
+                    * **Conclusión teórica:** Genera alta confianza moral y desarma la actitud defensiva del capitán.
+                    """)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                else:
+                    res_texto = "Desastroso (Pasivo)"
+                    st.error("❌ **¡Intervención Desastrosa!**")
+                    c1, c2 = st.columns(2)
+                    c1.metric(label="Cohesión del Vestuario", value="-70%", delta="Crítico")
+                    c2.metric(label="Eficacia Táctica", value="Nula", delta="Colapso")
+                    
+                    st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
+                    st.markdown("#### 🎓 Conclusiones")
+                    st.write("""
+                    * **Por qué es desastrosa:** Representa la ausencia total de liderazgo efectivo (Laissez-Faire). El entrenador evita tomar decisiones o mediar ante el conflicto.
+                    * **Conclusión teórica:** Genera ambigüedad y desorientación absoluta, permitiendo que el liderazgo informal negativo destruya la autoridad del cuerpo técnico.
+                    """)
+                    st.markdown('</div>', unsafe_allow_html=True)
                 
-                st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
-                st.markdown("#### 🎓 Conclusiones")
-                st.write("""
-                * **Por qué es desastrosa:** Representa la ausencia total de liderazgo efectivo (Laissez-Faire). El entrenador evita tomar decisiones o mediar ante el conflicto.
-                * **Conclusión teórica:** Genera ambigüedad y desorientación absoluta, permitiendo que el liderazgo informal negativo destruya la autoridad del cuerpo técnico.
-                """)
-                st.markdown('</div>', unsafe_allow_html=True)
+                st.session_state.historial.append({
+                    "grupo": nombre_grupo,
+                    "caso": "Caso 1: El Capitán Frustrado",
+                    "estilo": estilo_elegido,
+                    "resultado": res_texto
+                })
 
     elif "Caso 2" in caso_seleccionado:
         st.markdown('<div class="card-caso">', unsafe_allow_html=True)
@@ -177,45 +217,58 @@ with pestana_casos:
         )
         
         if st.button("🚀 Evaluar Estilo Aplicado", type="primary", key="btn_2"):
-            if "Transformacional" in estilo_elegido or "Auténtico" in estilo_elegido:
-                st.success("✅ **¡Intervención Óptima!**")
-                c1, c2 = st.columns(2)
-                c1.metric(label="Confianza del Jugador", value="Alta", delta="Recuperado")
-                c2.metric(label="Seguridad Psicológica", value="Óptima", delta="+")
-                
-                st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
-                st.markdown("#### 🎓 Conclusiones")
-                st.write("""
-                * **Por qué funciona:** Aplica la *Consideración Individualizada* y transparencia relacional. Atiende las necesidades emocionales específicas del deportista joven.
-                * **Conclusión teórica:** Protege psicológicamente al activo frente al error, fomentando la motivación intrínseca y reduciendo la ansiedad.
-                """)
-                st.markdown('</div>', unsafe_allow_html=True)
-            elif "Transaccional" in estilo_elegido:
-                st.warning("⚠️ **¡Efecto Contraproducente!**")
-                c1, c2 = st.columns(2)
-                c1.metric(label="Confianza del Jugador", value="-50%", delta="Baja")
-                c2.metric(label="Seguridad Psicológica", value="Nula", delta="Riesgo")
-                
-                st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
-                st.markdown("#### 🎓 Conclusiones")
-                st.write("""
-                * **Por qué falla:** Basado en la exigencia de rendimiento inmediato y reprimendas punitivas.
-                * **Conclusión teórica:** Exigir resultados bajo amedrentamiento en un jugador hiperventilando agrava su bloqueo y destruye su seguridad psicológica.
-                """)
-                st.markdown('</div>', unsafe_allow_html=True)
+            if not nombre_grupo:
+                st.error("❌ Debes indicar el nombre del grupo en la barra lateral para registrar el resultado.")
             else:
-                st.error("❌ **¡Intervención Desastrosa!**")
-                c1, c2 = st.columns(2)
-                c1.metric(label="Confianza del Jugador", value="-90%", delta="Colapso")
-                c2.metric(label="Seguridad Psicológica", value="Inexistente", delta="Crítico")
+                if "Transformacional" in estilo_elegido or "Auténtico" in estilo_elegido:
+                    res_texto = "Óptimo (Transformacional/Auténtico)"
+                    st.success("✅ **¡Intervención Óptima!**")
+                    c1, c2 = st.columns(2)
+                    c1.metric(label="Confianza del Jugador", value="Alta", delta="Recuperado")
+                    c2.metric(label="Seguridad Psicológica", value="Óptima", delta="+")
+                    
+                    st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
+                    st.markdown("#### 🎓 Conclusiones")
+                    st.write("""
+                    * **Por qué funciona:** Aplica la *Consideración Individualizada* y transparencia relacional. Atiende las necesidades emocionales específicas del deportista joven.
+                    * **Conclusión teórica:** Protege psicológicamente al activo frente al error, fomentando la motivación intrínseca y reduciendo la ansiedad.
+                    """)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                elif "Transaccional" in estilo_elegido:
+                    res_texto = "Contraproducente (Transaccional)"
+                    st.warning("⚠️ **¡Efecto Contraproducente!**")
+                    c1, c2 = st.columns(2)
+                    c1.metric(label="Confianza del Jugador", value="-50%", delta="Baja")
+                    c2.metric(label="Seguridad Psicológica", value="Nula", delta="Riesgo")
+                    
+                    st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
+                    st.markdown("#### 🎓 Conclusiones")
+                    st.write("""
+                    * **Por qué falla:** Basado en la exigencia de rendimiento inmediato y reprimendas punitivas.
+                    * **Conclusión teórica:** Exigir resultados bajo amedrentamiento en un jugador hiperventilando agrava su bloqueo y destruye su seguridad psicológica.
+                    """)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                else:
+                    res_texto = "Desastroso (Pasivo)"
+                    st.error("❌ **¡Intervención Desastrosa!**")
+                    c1, c2 = st.columns(2)
+                    c1.metric(label="Confianza del Jugador", value="-90%", delta="Colapso")
+                    c2.metric(label="Seguridad Psicológica", value="Inexistente", delta="Crítico")
+                    
+                    st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
+                    st.markdown("#### 🎓 Conclusiones")
+                    st.write("""
+                    * **Por qué es desastrosa:** Omitir feedback y mostrar pasividad (Laissez-Faire) ante un jugador al borde del llanto.
+                    * **Conclusión teórica:** La ausencia de guía y soporte genera indefensión aprendida y desorientación total en el deportista.
+                    """)
+                    st.markdown('</div>', unsafe_allow_html=True)
                 
-                st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
-                st.markdown("#### 🎓 Conclusiones")
-                st.write("""
-                * **Por qué es desastrosa:** Omitir feedback y mostrar pasividad (Laissez-Faire) ante un jugador al borde del llanto.
-                * **Conclusión teórica:** La ausencia de guía y soporte genera indefensión aprendida y desorientación total en el deportista.
-                """)
-                st.markdown('</div>', unsafe_allow_html=True)
+                st.session_state.historial.append({
+                    "grupo": nombre_grupo,
+                    "caso": "Caso 2: La Joven Promesa Bloqueada",
+                    "estilo": estilo_elegido,
+                    "resultado": res_texto
+                })
 
     elif "Caso 3" in caso_seleccionado:
         st.markdown('<div class="card-caso">', unsafe_allow_html=True)
@@ -236,58 +289,72 @@ with pestana_casos:
         )
         
         if st.button("🚀 Evaluar Estilo Aplicado", type="primary", key="btn_3"):
-            if "Transformacional" in estilo_elegido:
-                st.success("✅ **¡Intervención Óptima!**")
-                c1, c2 = st.columns(2)
-                c1.metric(label="Compromiso Táctico", value="90%", delta="Alto")
-                c2.metric(label="Alineación de Egos", value="Positiva", delta="Unificado")
-                
-                st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
-                st.markdown("#### 🎓 Conclusiones")
-                st.write("""
-                * **Por qué funciona:** Utiliza la *Estimulación Intelectual* y la visión de un propósito colectivo superior. Reta al jugador a entender que sus estadísticas dependen del bloque.
-                * **Conclusión teórica:** Alinea metas individuales con el equipo sin necesidad de coerción.
-                """)
-                st.markdown('</div>', unsafe_allow_html=True)
-            elif "Transaccional" in estilo_elegido:
-                st.warning("⚠️ **¡Efecto Mixto / Disciplinario!**")
-                c1, c2 = st.columns(2)
-                c1.metric(label="Compromiso Táctico", value="50%", delta="Forzado")
-                c2.metric(label="Alineación de Egos", value="Tensas", delta="Control")
-                
-                st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
-                st.markdown("#### 🎓 Conclusiones")
-                st.write("""
-                * **Por qué es limitado:** Basado estrictamente en normas y amenaza de suplencia o multa. 
-                * **Conclusión teórica:** Puede frenar su ego por obligación a corto plazo, pero no genera autonomía profunda ni compromiso genuino con el modelo de juego.
-                """)
-                st.markdown('</div>', unsafe_allow_html=True)
-            elif "Auténtico" in estilo_elegido:
-                st.success("✅ **¡Intervención Sólida!**")
-                c1, c2 = st.columns(2)
-                c1.metric(label="Compromiso Táctico", value="85%", delta="Alto")
-                c2.metric(label="Alineación de Egos", value="Firme", delta="Valores")
-                
-                st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
-                st.markdown("#### 🎓 Conclusiones")
-                st.write("""
-                * **Por qué funciona:** Transparencia relacional y confrontación basada en valores morales compartidos del club.
-                * **Conclusión teórica:** Establece límites éticos claros sobre el esfuerzo colectivo exigido.
-                """)
-                st.markdown('</div>', unsafe_allow_html=True)
+            if not nombre_grupo:
+                st.error("❌ Debes indicar el nombre del grupo en la barra lateral para registrar el resultado.")
             else:
-                st.error("❌ **¡Intervención Desastrosa!**")
-                c1, c2 = st.columns(2)
-                c1.metric(label="Compromiso Táctico", value="10%", delta="Colapso")
-                c2.metric(label="Alineación de Egos", value="Anarquía", delta="Ruptura")
+                if "Transformacional" in estilo_elegido:
+                    res_texto = "Óptimo (Transformacional)"
+                    st.success("✅ **¡Intervención Óptima!**")
+                    c1, c2 = st.columns(2)
+                    c1.metric(label="Compromiso Táctico", value="90%", delta="Alto")
+                    c2.metric(label="Alineación de Egos", value="Positiva", delta="Unificado")
+                    
+                    st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
+                    st.markdown("#### 🎓 Conclusiones")
+                    st.write("""
+                    * **Por qué funciona:** Utiliza la *Estimulación Intelectual* y la visión de un propósito colectivo superior. Reta al jugador a entender que sus estadísticas dependen del bloque.
+                    * **Conclusión teórica:** Alinea metas individuales con el equipo sin necesidad de coerción.
+                    """)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                elif "Transaccional" in estilo_elegido:
+                    res_texto = "Limitado (Transaccional)"
+                    st.warning("⚠️ **¡Efecto Mixto / Disciplinario!**")
+                    c1, c2 = st.columns(2)
+                    c1.metric(label="Compromiso Táctico", value="50%", delta="Forzado")
+                    c2.metric(label="Alineación de Egos", value="Tensas", delta="Control")
+                    
+                    st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
+                    st.markdown("#### 🎓 Conclusiones")
+                    st.write("""
+                    * **Por qué es limitado:** Basado estrictamente en normas y amenaza de suplencia o multa. 
+                    * **Conclusión teórica:** Puede frenar su ego por obligación a corto plazo, pero no genera autonomía profunda ni compromiso genuino con el modelo de juego.
+                    """)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                elif "Auténtico" in estilo_elegido:
+                    res_texto = "Sólido (Auténtico)"
+                    st.success("✅ **¡Intervención Sólida!**")
+                    c1, c2 = st.columns(2)
+                    c1.metric(label="Compromiso Táctico", value="85%", delta="Alto")
+                    c2.metric(label="Alineación de Egos", value="Firme", delta="Valores")
+                    
+                    st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
+                    st.markdown("#### 🎓 Conclusiones")
+                    st.write("""
+                    * **Por qué funciona:** Transparencia relacional y confrontación basada en valores morales compartidos del club.
+                    * **Conclusión teórica:** Establece límites éticos claros sobre el esfuerzo colectivo exigido.
+                    """)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                else:
+                    res_texto = "Desastroso (Pasivo)"
+                    st.error("❌ **¡Intervención Desastrosa!**")
+                    c1, c2 = st.columns(2)
+                    c1.metric(label="Compromiso Táctico", value="10%", delta="Colapso")
+                    c2.metric(label="Alineación de Egos", value="Anarquía", delta="Ruptura")
+                    
+                    st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
+                    st.markdown("#### 🎓 Feedback Académico y Conclusiones")
+                    st.write("""
+                    * **Por qué es desastrosa:** Permisividad total (Laissez-Faire)[cite: 4]. Otorgar libertad absoluta a una estrella individualista.
+                    * **Conclusión teórica:** Destruye el principio de autoridad del entrenador y provoca una revuelta inmediata en el resto de la plantilla al percibir trato de favor.
+                    """)
+                    st.markdown('</div>', unsafe_allow_html=True)
                 
-                st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
-                st.markdown("#### 🎓 Feedback Académico y Conclusiones")
-                st.write("""
-                * **Por qué es desastrosa:** Permisividad total (Laissez-Faire)[cite: 4]. Otorgar libertad absoluta a una estrella individualista.
-                * **Conclusión teórica:** Destruye el principio de autoridad del entrenador y provoca una revuelta inmediata en el resto de la plantilla al percibir trato de favor.
-                """)
-                st.markdown('</div>', unsafe_allow_html=True)
+                st.session_state.historial.append({
+                    "grupo": nombre_grupo,
+                    "caso": "Caso 3: El Fichaje Estrella Individualista",
+                    "estilo": estilo_elegido,
+                    "resultado": res_texto
+                })
 
     else:
         st.markdown('<div class="card-caso">', unsafe_allow_html=True)
@@ -308,58 +375,86 @@ with pestana_casos:
         )
         
         if st.button("🚀 Evaluar Estilo Aplicado", type="primary", key="btn_4"):
-            if "Transformacional" in estilo_elegido:
-                st.success("✅ **¡Intervención Óptima!**")
-                c1, c2 = st.columns(2)
-                c1.metric(label="Moral Colectiva", value="+90%", delta="Motivados")
-                c2.metric(label="Potencial de Remontada", value="Alto", delta="Activo")
-                
-                st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
-                st.markdown("#### 🎓 Conclusiones")
-                st.write("""
-                * **Por qué funciona:** Aplica *Motivación Inspiradora* y reto intelectual. 
-                * **Conclusión teórica:** Es el único estilo capaz de romper la indefensión aprendida, infundiendo una visión optimista y reavivando el propósito colectivo.
-                """)
-                st.markdown('</div>', unsafe_allow_html=True)
-            elif "Transaccional" in estilo_elegido:
-                st.warning("⚠️ **¡Efecto Insuficiente!**")
-                c1, c2 = st.columns(2)
-                c1.metric(label="Moral Colectiva", value="30%", delta="Baja")
-                c2.metric(label="Potencial de Remontada", value="Bajo", delta="Miedo")
-                
-                st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
-                st.markdown("#### 🎓 Conclusiones")
-                st.write("""
-                * **Por qué falla:** Amenazas de sanciones o exigencia basada en castigos.
-                * **Conclusión teórica:** Ante un grupo bloqueado por la apatía, el castigo transaccional incrementa el miedo al error en lugar de reactivar la energía intrínseca.
-                """)
-                st.markdown('</div>', unsafe_allow_html=True)
-            elif "Auténtico" in estilo_elegido:
-                st.success("✅ **¡Intervención Muy Correcta!**")
-                c1, c2 = st.columns(2)
-                c1.metric(label="Moral Colectiva", value="+75%", delta="Estable")
-                c2.metric(label="Potencial de Remontada", value="Moderado", delta="Firme")
-                
-                st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
-                st.markdown("#### 🎓 Conclusiones")
-                st.write("""
-                * **Por qué funciona:** Procesamiento equilibrado y autoconciencia del entrenador.
-                * **Conclusión teórica:** Asume su parte táctica y transmite confianza inquebrantable en los valores del grupo.
-                """)
-                st.markdown('</div>', unsafe_allow_html=True)
+            if not nombre_grupo:
+                st.error("❌ Debes indicar el nombre del grupo en la barra lateral para registrar el resultado.")
             else:
-                st.error("❌ **¡Fracaso Absoluto del Cuerpo Técnico!**")
-                c1, c2 = st.columns(2)
-                c1.metric(label="Moral Colectiva", value="0%", delta="hundidos")
-                c2.metric(label="Potencial de Remontada", value="Nulo", delta="Derrota")
+                if "Transformacional" in estilo_elegido:
+                    res_texto = "Óptimo (Transformacional)"
+                    st.success("✅ **¡Intervención Óptima!**")
+                    c1, c2 = st.columns(2)
+                    c1.metric(label="Moral Colectiva", value="+90%", delta="Motivados")
+                    c2.metric(label="Potencial de Remontada", value="Alto", delta="Activo")
+                    
+                    st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
+                    st.markdown("#### 🎓 Conclusiones")
+                    st.write("""
+                    * **Por qué funciona:** Aplica *Motivación Inspiradora* y reto intelectual. 
+                    * **Conclusión teórica:** Es el único estilo capaz de romper la indefensión aprendida, infundiendo una visión optimista y reavivando el propósito colectivo.
+                    """)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                elif "Transaccional" in estilo_elegido:
+                    res_texto = "Insuficiente (Transaccional)"
+                    st.warning("⚠️ **¡Efecto Insuficiente!**")
+                    c1, c2 = st.columns(2)
+                    c1.metric(label="Moral Colectiva", value="30%", delta="Baja")
+                    c2.metric(label="Potencial de Remontada", value="Bajo", delta="Miedo")
+                    
+                    st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
+                    st.markdown("#### 🎓 Conclusiones")
+                    st.write("""
+                    * **Por qué falla:** Amenazas de sanciones o exigencia basada en castigos.
+                    * **Conclusión teórica:** Ante un grupo bloqueado por la apatía, el castigo transaccional incrementa el miedo al error en lugar de reactivar la energía intrínseca.
+                    """)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                elif "Auténtico" in estilo_elegido:
+                    res_texto = "Correcto (Auténtico)"
+                    st.success("✅ **¡Intervención Muy Correcta!**")
+                    c1, c2 = st.columns(2)
+                    c1.metric(label="Moral Colectiva", value="+75%", delta="Estable")
+                    c2.metric(label="Potencial de Remontada", value="Moderado", delta="Firme")
+                    
+                    st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
+                    st.markdown("#### 🎓 Conclusiones")
+                    st.write("""
+                    * **Por qué funciona:** Procesamiento equilibrado y autoconciencia del entrenador.
+                    * **Conclusión teórica:** Asume su parte táctica y transmite confianza inquebrantable en los valores del grupo.
+                    """)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                else:
+                    res_texto = "Desastroso (Pasivo)"
+                    st.error("❌ **¡Fracaso Absoluto del Cuerpo Técnico!**")
+                    c1, c2 = st.columns(2)
+                    c1.metric(label="Moral Colectiva", value="0%", delta="hundidos")
+                    c2.metric(label="Potencial de Remontada", value="Nulo", delta="Derrota")
+                    
+                    st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
+                    st.markdown("#### 🎓 Conclusiones")
+                    st.write("""
+                    * **Por qué es desastrosa:** Ausencia total de liderazgo (Laissez-Faire). Entrar al vestuario sin decir nada o demorar la intervención.
+                    * **Conclusión teórica:** Consolida la derrota psicológica antes de saltar al campo, evidenciando una falta absoluta de dirección técnica.
+                    """)
+                    st.markdown('</div>', unsafe_allow_html=True)
                 
-                st.markdown('<div class="feedback-box">', unsafe_allow_html=True)
-                st.markdown("#### 🎓Conclusiones")
-                st.write("""
-                * **Por qué es desastrosa:** Ausencia total de liderazgo (Laissez-Faire). Entrar al vestuario sin decir nada o demorar la intervención.
-                * **Conclusión teórica:** Consolida la derrota psicológica antes de saltar al campo, evidenciando una falta absoluta de dirección técnica.
-                """)
-                st.markdown('</div>', unsafe_allow_html=True)
+                st.session_state.historial.append({
+                    "grupo": nombre_grupo,
+                    "caso": "Caso 4: Indefensión Aprendida Colectiva",
+                    "estilo": estilo_elegido,
+                    "resultado": res_texto
+                })
+
+# Nueva Pestaña: Resumen de Resultados del Grupo
+with pestana_resumen:
+    st.subheader("📊 Historial de Decisiones del Grupo")
+    if not nombre_grupo:
+        st.info("ℹ️ Introduce el nombre de tu grupo en el panel lateral para ver el registro de vuestras decisiones.")
+    elif not st.session_state.historial:
+        st.info(f"El grupo **{nombre_grupo}** aún no ha evaluado ningún caso. ¡Selecciona una opción en la pestaña de Casos para empezar a registrar vuestro recorrido!")
+    else:
+        st.success(f"Mostrando los resultados registrados para: **{nombre_grupo}**")
+        for i, item in enumerate(st.session_state.historial, 1):
+            with st.expander(f"Iteración {i}: {item['caso']}"):
+                st.write(f"**Estilo aplicado:** {item['estilo']}")
+                st.write(f"**Resultado del impacto:** {item['resultado']}")
 
 with pestana_teoria:
     st.subheader("🧠 Los Cuatro Estilos de Liderazgo del Entrenador")
